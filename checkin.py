@@ -7,7 +7,7 @@ import asyncio
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import httpx
 from dotenv import load_dotenv
@@ -16,6 +16,12 @@ from playwright.async_api import async_playwright
 from notify import notify
 
 load_dotenv()
+
+CHINA_TIMEZONE = timezone(timedelta(hours=8))
+
+
+def china_now():
+	return datetime.now(CHINA_TIMEZONE)
 
 
 def load_accounts():
@@ -236,7 +242,7 @@ async def check_in_account(account_info, account_index):
 async def main():
 	"""主函数"""
 	print('[SYSTEM] AnyRouter.top multi-account auto check-in script started (using Playwright)')
-	print(f'[TIME] Execution time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+	print(f'[TIME] Execution time (UTC+8): {china_now().strftime("%Y-%m-%d %H:%M:%S")}')
 
 	# 加载账号配置
 	accounts = load_accounts()
@@ -280,13 +286,14 @@ async def main():
 	else:
 		summary.append('[ERROR] All accounts check-in failed')
 
-	time_info = f'[TIME] Execution time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+	notification_time = china_now()
+	time_info = f'[TIME] Execution time (UTC+8): {notification_time.strftime("%Y-%m-%d %H:%M:%S")}'
 
 	notify_content = '\n\n'.join([time_info, '\n'.join(notification_content), '\n'.join(summary)])
 
 	print(notify_content)
 
-	notify_title = f'AnyRouter Check-in Results - {datetime.now().strftime("%Y-%m-%d %H:%M")}'
+	notify_title = f'AnyRouter Check-in Results - {notification_time.strftime("%Y-%m-%d %H:%M")} UTC+8'
 	notify.push_message(notify_title, notify_content, msg_type='text')
 
 	# 设置退出码

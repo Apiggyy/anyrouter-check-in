@@ -1,10 +1,13 @@
 import os
 import smtplib
+from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
-from email.utils import formataddr, formatdate, make_msgid
+from email.utils import formataddr, format_datetime, make_msgid
 from typing import Literal
 
 import httpx
+
+CHINA_TIMEZONE = timezone(timedelta(hours=8))
 
 
 class NotificationKit:
@@ -28,7 +31,7 @@ class NotificationKit:
 		msg['To'] = self.email_to
 		msg['Subject'] = title
 		msg['Reply-To'] = self.email_user
-		msg['Date'] = formatdate(localtime=True)
+		msg['Date'] = format_datetime(datetime.now(CHINA_TIMEZONE))
 		msg['Message-ID'] = make_msgid(domain=sender_domain)
 
 		content_subtype = 'plain' if msg_type == 'text' else msg_type
