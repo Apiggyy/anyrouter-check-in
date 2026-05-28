@@ -134,7 +134,7 @@ def get_user_info(client, headers):
 				user_data = data.get('data', {})
 				quota = round(user_data.get('quota', 0) / 500000, 2)
 				used_quota = round(user_data.get('used_quota', 0) / 500000, 2)
-				return f':money: Current balance: ${quota}, Used: ${used_quota}'
+				return f'[BALANCE] Current balance: ${quota}, Used: ${used_quota}'
 	except Exception as e:
 		return f'[FAIL] Failed to get user info: {str(e)[:50]}...'
 	return None
@@ -286,7 +286,8 @@ async def main():
 
 	print(notify_content)
 
-	notify.push_message('AnyRouter Check-in Results', notify_content, msg_type='text')
+	notify_title = f'AnyRouter Check-in Results - {datetime.now().strftime("%Y-%m-%d %H:%M")}'
+	notify.push_message(notify_title, notify_content, msg_type='text')
 
 	# 设置退出码
 	sys.exit(0 if success_count > 0 else 1)

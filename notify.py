@@ -1,7 +1,7 @@
 import os
 import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.message import EmailMessage
+from email.utils import formataddr, formatdate, make_msgid
 from typing import Literal
 
 import httpx
@@ -22,15 +22,19 @@ class NotificationKit:
 		if not self.email_user or not self.email_pass or not self.email_to:
 			raise ValueError('Email configuration not set')
 
-		msg = MIMEMultipart()
-		msg['From'] = f'AnyRouter Assistant <{self.email_user}>'
+		sender_domain = self.email_user.split('@')[-1]
+		msg = EmailMessage()
+		msg['From'] = formataddr(('AnyRouter Assistant', self.email_user))
 		msg['To'] = self.email_to
 		msg['Subject'] = title
+		msg['Reply-To'] = self.email_user
+		msg['Date'] = formatdate(localtime=True)
+		msg['Message-ID'] = make_msgid(domain=sender_domain)
 
-		body = MIMEText(content, msg_type, 'utf-8')
-		msg.attach(body)
+		content_subtype = 'plain' if msg_type == 'text' else msg_type
+		msg.set_content(content, subtype=content_subtype, charset='utf-8')
 
-		smtp_server = f'smtp.{self.email_user.split("@")[1]}'
+		smtp_server = f'smtp.{sender_domain}'
 		with smtplib.SMTP_SSL(smtp_server, 465) as server:
 			server.login(self.email_user, self.email_pass)
 			server.send_message(msg)
